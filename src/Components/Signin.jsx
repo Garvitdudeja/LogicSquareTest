@@ -4,18 +4,21 @@ import { BsPlusLg, BsTrash } from 'react-icons/bs';
 import { FaEdit } from 'react-icons/fa';
 
 function MyVerticallyCenteredModal(props) {
+
+    const empData = props.empData;
+    const oldData = props.oldData;
     const [data, setData] = useState({})
 
     const handleChange = (e)=>{
         setData({...data,[e.target.name]:e.target.value})
-        console.log(data)
     }
 
     const storeData = () => {
-        setData({...data,id:Date.now(),Available: false})
-        console.log(data)
-        
-
+        props.onHide()
+        empData([{...data,id:Date.now().toString(),Available: false},...oldData])
+        props.setTotal(prev=>prev+1)
+        console.log(oldData);
+        localStorage.setItem('LSData', JSON.stringify([{...data,id:Date.now().toString(),Available: false},...oldData]))
     }
 
 
@@ -85,7 +88,7 @@ function MyVerticallyCenteredModal(props) {
                 </Form>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="outline-danger" onClick={props.onHide}>Danger</Button>
+                <Button variant="outline-danger" onClick={props.onHide}>Cancel</Button>
                 <Button variant='success' onClick={storeData} >Save</Button>
             </Modal.Footer>
         </Modal>
@@ -99,38 +102,21 @@ function Signin() {
     const [modalShow, setModalShow] = useState(false);
     const [Available, setAvailable] = useState(10);
     const [Total, setTotal] = useState(10);
-    const [employeeData, setEmployeeData] = useState(
-        [
-            {
-                id: 'dfaefe',
-                Name: 'John Doe',
-                Department: 'Testing',
-                Available: true
-            }, {
-                id: 'efwewewf',
-                Name: 'John Doe',
-                Department: 'Testing',
-                Available: false
-            }, {
-                id: '124324234',
-                Name: 'John Doe',
-                Department: 'Testing',
-                Available: false
-            },
-        ]
-    );
+    const [employeeData, setEmployeeData] = useState([]);
+
 
     useEffect(() => {
         const getData = () => {
+            let data=JSON.parse(localStorage.getItem('LSData'))
             let x=0
-            setTotal(employeeData.length)
-            for(let i=0; i<employeeData.length; i++) {
-                if (employeeData[i].Available==true){
+            setTotal(data.length)
+            for(let i=0; i<data.length; i++) {
+                if (data[i].Available==true){
                     x+=1
                 }
-            }
+            }   
             setAvailable(x)
-            
+            setEmployeeData(data)
         };
         getData();
     }, [])
@@ -142,8 +128,10 @@ function Signin() {
             }
         }
 
-        setEmployeeData(employeeData.filter(item => item.id !== e.target.id))
+        setEmployeeData(employeeData.filter(item => item.id != e.target.id))
         setTotal(prev => prev - 1)
+        console.log(employeeData)
+        localStorage.setItem('LSData', JSON.stringify(employeeData.filter(item => item.id != e.target.id)))
         
     }
     const changeAvailable = (e) => {
@@ -189,7 +177,10 @@ function Signin() {
                 </Button>
 
                 <MyVerticallyCenteredModal
+                    empData={setEmployeeData}
+                    oldData={employeeData}
                     show={modalShow}
+                    setTotal={setTotal}
                     onHide={() => setModalShow(false)}
                 />
             </div>
