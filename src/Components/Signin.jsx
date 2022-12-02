@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Nav, Container, Navbar, Button, Modal, Table, Form, Row, Col } from 'react-bootstrap';
 import { BsPlusLg, BsTrash } from 'react-icons/bs';
 import { FaEdit } from 'react-icons/fa';
+import AddNewModal from './AddNewModal';
 
 function MyVerticallyCenteredModal(props) {
 
@@ -9,16 +10,18 @@ function MyVerticallyCenteredModal(props) {
     const oldData = props.oldData;
     const [data, setData] = useState({})
 
-    const handleChange = (e)=>{
-        setData({...data,[e.target.name]:e.target.value})
+    const handleChange = (e) => {
+        setData({ ...data, [e.target.name]: e.target.value })
     }
 
-    const storeData = () => {
-        props.onHide()
-        empData([{...data,id:Date.now().toString(),Available: false},...oldData])
-        props.setTotal(prev=>prev+1)
+    const storeData = (event) => {
+        let x = [{ ...data, id: Date.now().toString(), Available: false }, ...oldData];
+        empData(x)
+        props.setTotal(prev => prev + 1)
         console.log(oldData);
-        localStorage.setItem('LSData', JSON.stringify([{...data,id:Date.now().toString(),Available: false},...oldData]))
+        localStorage.setItem('LSData', JSON.stringify(x))
+        props.onHide()
+
     }
 
 
@@ -36,13 +39,13 @@ function MyVerticallyCenteredModal(props) {
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <Form>
+                <Form hasValidation>
                     <Container>
                         <Row>
                             <Col>
                                 <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
                                     <Form.Label>Name</Form.Label>
-                                    <Form.Control type="text" placeholder="Enter" name='Name' onChange={handleChange}  />
+                                    <Form.Control type="text" placeholder="Enter" name='Name' required onChange={handleChange} />
                                 </Form.Group>
                             </Col>
                             <Col>
@@ -60,13 +63,13 @@ function MyVerticallyCenteredModal(props) {
                             <Col>
                                 <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
                                     <Form.Label>Age</Form.Label>
-                                    <Form.Control type="Number" placeholder="Enter" name='Age' onChange={handleChange}  />
+                                    <Form.Control type="Number" placeholder="Enter" name='Age' onChange={handleChange} />
                                 </Form.Group>
                             </Col>
                             <Col>
                                 <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
                                     <Form.Label>Designation</Form.Label>
-                                    <Form.Control type="text" placeholder="Enter" name='Designation' onChange={handleChange}  />
+                                    <Form.Control type="text" placeholder="Enter" name='Designation' onChange={handleChange} />
                                 </Form.Group>
                             </Col>
                         </Row>
@@ -107,14 +110,14 @@ function Signin() {
 
     useEffect(() => {
         const getData = () => {
-            let data=JSON.parse(localStorage.getItem('LSData'))
-            let x=0
+            let data = JSON.parse(localStorage.getItem('LSData'))
+            let x = 0
             setTotal(data.length)
-            for(let i=0; i<data.length; i++) {
-                if (data[i].Available==true){
-                    x+=1
+            for (let i = 0; i < data.length; i++) {
+                if (data[i].Available == true) {
+                    x += 1
                 }
-            }   
+            }
             setAvailable(x)
             setEmployeeData(data)
         };
@@ -122,9 +125,9 @@ function Signin() {
     }, [])
 
     const deleteEmployee = (e) => {
-        for(let i=0; i<employeeData.length; i++) {
-            if (employeeData[i].id===e.target.id && employeeData[i].Available==true){
-                setAvailable(prev=>prev-1)
+        for (let i = 0; i < employeeData.length; i++) {
+            if (employeeData[i].id === e.target.id && employeeData[i].Available == true) {
+                setAvailable(prev => prev - 1)
             }
         }
 
@@ -132,16 +135,16 @@ function Signin() {
         setTotal(prev => prev - 1)
         console.log(employeeData)
         localStorage.setItem('LSData', JSON.stringify(employeeData.filter(item => item.id != e.target.id)))
-        
+
     }
     const changeAvailable = (e) => {
-        if (e.target.value==="true"){
-            setEmployeeData(employeeData.map(item=>item.id===e.target.id ? {...item,Available:false}:item))
-            setAvailable(prev=>prev-1)
+        if (e.target.value === "true") {
+            setEmployeeData(employeeData.map(item => item.id === e.target.id ? { ...item, Available: false } : item))
+            setAvailable(prev => prev - 1)
         }
-        else{
-            setEmployeeData(employeeData.map(item=>item.id===e.target.id ? {...item,Available:true}:item))
-            setAvailable(prev=>prev+1)
+        else {
+            setEmployeeData(employeeData.map(item => item.id === e.target.id ? { ...item, Available: true } : item))
+            setAvailable(prev => prev + 1)
         }
     }
     return (
@@ -168,7 +171,7 @@ function Signin() {
                 <h5>Total: {Total}</h5>
 
 
-                
+
                 {/* Add Member Modal */}
 
 
@@ -204,7 +207,10 @@ function Signin() {
                                     <td>{each.Department}</td>
                                     <td><Form.Check aria-label="option 1" id={each.id} value={each.Available} checked={each.Available} onClick={changeAvailable} /></td>
                                     <td>
-                                        <Button variant="outline-primary" className='mx-2' > <FaEdit />Edit</Button>
+                                        <Button variant="outline-primary" onClick={() => setModalShow(true)}>
+                                            <BsPlusLg /> <FaEdit />Edit
+                                        </Button>
+
                                         <Button variant="outline-danger" id={each.id} onClick={deleteEmployee}> <BsTrash />Delete</Button>
                                     </td>
                                 </tr>
