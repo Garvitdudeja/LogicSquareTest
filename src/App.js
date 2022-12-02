@@ -1,10 +1,10 @@
-import Signin from "./Components/Signin"
 
+import Final from './Components/Final'
 
 export default function App() {
   return (
     <>
-    <Signin></Signin>
+    <Final></Final>
     </>
   )
 }
